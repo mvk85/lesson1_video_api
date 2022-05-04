@@ -23,15 +23,13 @@ let videos: Video[] = [
 ]  
 
 const validateVideo = (video: Video) => {
-    return !!video.title || !!video.author;
+    return !!video.title;
 }
 
 const generateErrors = (video: Video) => {
     const errorsMessages = [];
 
     if (!video.title) errorsMessages.push({ message: 'string', field: "title" })
-
-    if (!video.author) errorsMessages.push({ message: 'string', field: "author" })
     
     return { errorsMessages, resultCode: 1 }
 }
@@ -102,7 +100,7 @@ app.put('/videos/:id',(req: Request, res: Response)=>{
         res.status(400).send(errors);
     } else {
         video.title = newVideo.title
-        res.status(204).send(200)
+        res.send(204)
     }
 })
 
