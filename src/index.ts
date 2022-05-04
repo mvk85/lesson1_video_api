@@ -22,8 +22,10 @@ let videos: Video[] = [
     {id: 5, title: 'About JS - 05', author: 'it-incubator.eu'},
 ]  
 
+const checkTitleLenghtValidator = (title: unknown) => String(title).length <= 40
+
 const validateVideo = (video: Video) => {
-    return !!video.title;
+    return !!video.title && checkTitleLenghtValidator(video.title);
 }
 
 const generateErrors = (video: Video) => {
@@ -33,7 +35,7 @@ const generateErrors = (video: Video) => {
         errorsMessages.push({ message: 'string', field: "title" })
     }
 
-    if (video.title && String(video.title).length > 40) {
+    if (video.title && !checkTitleLenghtValidator(video.title)) {
         errorsMessages.push({ message: 'string', field: "title" })
     }
     
