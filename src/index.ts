@@ -29,7 +29,13 @@ const validateVideo = (video: Video) => {
 const generateErrors = (video: Video) => {
     const errorsMessages = [];
 
-    if (!video.title) errorsMessages.push({ message: 'string', field: "title" })
+    if (!video.title) {
+        errorsMessages.push({ message: 'string', field: "title" })
+    }
+
+    if (video.title && String(video.title).length > 40) {
+        errorsMessages.push({ message: 'string', field: "title" })
+    }
     
     return { errorsMessages, resultCode: 1 }
 }
