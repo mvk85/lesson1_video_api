@@ -1,26 +1,17 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
+import { Video } from './types'
+import { videosRepository } from './repositories/videos-repository'
+import { body, validationResult } from 'express-validator'
+import { validationTitle } from './middleware/input-validation.middleware'
+import { checkValidationErrors } from './middleware/check-errors-validation.middleware'
 
 const app = express()
 const port = process.env.PORT || 3000
 
 app.use(cors())
 app.use(bodyParser.json())
-
-type Video = {
-    id: number,
-    title: string,
-    author: string,
-}
-
-let videos: Video[] = [
-    {id: 1, title: 'About JS - 01', author: 'it-incubator.eu'},
-    {id: 2, title: 'About JS - 02', author: 'it-incubator.eu'},
-    {id: 3, title: 'About JS - 03', author: 'it-incubator.eu'},
-    {id: 4, title: 'About JS - 04', author: 'it-incubator.eu'},
-    {id: 5, title: 'About JS - 05', author: 'it-incubator.eu'},
-]  
 
 const checkTitleLenghtValidator = (title: unknown) => String(title).length <= 40
 
@@ -48,13 +39,15 @@ app.get('/', (req: Request, res: Response ) => {
 
 
 app.get('/videos', (req: Request, res: Response ) => {
-    res.send(videos)
+    const videos = videosRepository.getVideos();
+
+    res.send(videos);
 })
 
 app.get('/videos/:videoId', (req: Request, res: Response) => {
     const id = +req.params.videoId;
 
-    const video = videos.find(v => v.id === id)
+    const video = videosRepository.getVideoById(id);
 
     if (!video) {
         res.send(404)
@@ -63,54 +56,46 @@ app.get('/videos/:videoId', (req: Request, res: Response) => {
     }
 })
 
-app.post('/videos', (req: Request, res: Response) => {
-    const newVideo = {
-        id: +(new Date()),
-        title: req.body.title,
-        author: 'it-incubator.eu'
-    }
+app.post('/videos', 
+    validationTitle,
+    checkValidationErrors,
+    (req: Request, res: Response) => {
+    const title = req.body.title;
+    const newVideo = videosRepository.createVideo(title);
 
-    if (validateVideo(newVideo)) {
-        videos.push(newVideo)
+    if (newVideo) {
         res.status(201).send(newVideo)
     } else {
-        const errors = generateErrors(newVideo)
-
-        res.status(400).send(errors);
+        res.send(500);
     }    
 })
 
 app.delete('/videos/:id',(req: Request, res: Response)=>{
     const id = +req.params.id;
-    const isVideoExist = false;
-    const lenghtVideos = videos.length;
+    const isDeleted = videosRepository.deleteVideoById(id)
 
-    videos = videos.filter(v => v.id !== id)
-
-    if ( videos.length !== lenghtVideos) {
+    if (isDeleted) {
         res.send(204);
     } else {
         res.send(404)
     }    
 })
 
-app.put('/videos/:id',(req: Request, res: Response)=>{
-    const id = +req.params.id;
-    const newVideo = req.body;
+app.put('/videos/:id',
+    validationTitle,
+    checkValidationErrors,
+    (req: Request, res: Response) => {
+        const id = +req.params.id;
+        const videoTitle = req.body.title;
+        const isUpdated = videosRepository.updateVideoById(id, videoTitle)
 
-    const video = videos.find(v => v.id === id)
-
-    if (!video) {
-        res.send(404)
-    } else if (!validateVideo(newVideo)) {
-        const errors = generateErrors(newVideo)
-
-        res.status(400).send(errors);
-    } else {
-        video.title = newVideo.title
-        res.send(204)
+        if (isUpdated) {
+            res.send(204)
+        } else {
+            res.send(404)
+        }
     }
-})
+)
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
