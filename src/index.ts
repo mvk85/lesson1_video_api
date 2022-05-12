@@ -13,26 +13,6 @@ const port = process.env.PORT || 3000
 app.use(cors())
 app.use(bodyParser.json())
 
-const checkTitleLenghtValidator = (title: unknown) => String(title).length <= 40
-
-const validateVideo = (video: Video) => {
-    return !!video.title && checkTitleLenghtValidator(video.title);
-}
-
-const generateErrors = (video: Video) => {
-    const errorsMessages = [];
-
-    if (!video.title) {
-        errorsMessages.push({ message: 'string', field: "title" })
-    }
-
-    if (video.title && !checkTitleLenghtValidator(video.title)) {
-        errorsMessages.push({ message: 'string', field: "title" })
-    }
-    
-    return { errorsMessages, resultCode: 1 }
-}
-
 app.get('/', (req: Request, res: Response ) => {
     res.send('Hello: World!')
 })
