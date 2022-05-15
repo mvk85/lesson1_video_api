@@ -3,3 +3,10 @@ export type Video = {
     title: string,
     author: string,
 }
+
+export enum MethodsHttp {
+    GET = 'GET',
+    POST = 'POST',
+    PUT = 'PUT',
+    DELETE = 'DELETE'
+}

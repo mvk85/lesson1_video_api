@@ -1,15 +1,16 @@
+import { Video } from "../types";
 import { videos } from "./db"
 
 export const videosRepository = {
-    getVideos() {
+    async getVideos() {
         return videos;
     },
 
-    getVideoById(id: number) {
+    async getVideoById(id: number) {
         return videos.find(v => v.id === id)
     },
 
-    deleteVideoById(id: number) {
+    async deleteVideoById(id: number) {
         const videoIndex = videos.findIndex(v => v.id === id)
 
         if (videoIndex > -1) {
@@ -21,7 +22,7 @@ export const videosRepository = {
         return false;
     },
 
-    updateVideoById(id: number, title: string) {
+    async updateVideoById(id: number, title: string) {
         const video = videos.find(v => v.id === id)
 
         if (!video) return false;
@@ -31,8 +32,8 @@ export const videosRepository = {
         return true;
     },
 
-    createVideo(title: string) {
-        const newVideo = {
+    async createVideo(title: string) {
+        const newVideo: Video = {
             id: +(new Date()),
             title,
             author: 'it-incubator.eu'

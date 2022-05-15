@@ -6,6 +6,7 @@ import { videosRepository } from './repositories/videos-repository'
 import { body, validationResult } from 'express-validator'
 import { validationTitle } from './middleware/input-validation.middleware'
 import { checkValidationErrors } from './middleware/check-errors-validation.middleware'
+import { authMiddleware } from './middleware/auth.middleware'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -13,21 +14,23 @@ const port = process.env.PORT || 3000
 app.use(cors())
 app.use(bodyParser.json())
 
+app.use(authMiddleware);
+
 app.get('/', (req: Request, res: Response ) => {
     res.send('Hello: World!')
 })
 
 
-app.get('/videos', (req: Request, res: Response ) => {
-    const videos = videosRepository.getVideos();
+app.get('/videos', async (req: Request, res: Response ) => {
+    const videos = await videosRepository.getVideos();
 
     res.send(videos);
 })
 
-app.get('/videos/:videoId', (req: Request, res: Response) => {
+app.get('/videos/:videoId', async (req: Request, res: Response) => {
     const id = +req.params.videoId;
 
-    const video = videosRepository.getVideoById(id);
+    const video = await videosRepository.getVideoById(id);
 
     if (!video) {
         res.send(404)
@@ -39,9 +42,9 @@ app.get('/videos/:videoId', (req: Request, res: Response) => {
 app.post('/videos', 
     validationTitle,
     checkValidationErrors,
-    (req: Request, res: Response) => {
+    async (req: Request, res: Response) => {
     const title = req.body.title;
-    const newVideo = videosRepository.createVideo(title);
+    const newVideo = await videosRepository.createVideo(title);
 
     if (newVideo) {
         res.status(201).send(newVideo)
@@ -50,9 +53,9 @@ app.post('/videos',
     }    
 })
 
-app.delete('/videos/:id',(req: Request, res: Response)=>{
+app.delete('/videos/:id', async (req: Request, res: Response)=>{
     const id = +req.params.id;
-    const isDeleted = videosRepository.deleteVideoById(id)
+    const isDeleted = await videosRepository.deleteVideoById(id)
 
     if (isDeleted) {
         res.send(204);
@@ -64,10 +67,10 @@ app.delete('/videos/:id',(req: Request, res: Response)=>{
 app.put('/videos/:id',
     validationTitle,
     checkValidationErrors,
-    (req: Request, res: Response) => {
+    async (req: Request, res: Response) => {
         const id = +req.params.id;
         const videoTitle = req.body.title;
-        const isUpdated = videosRepository.updateVideoById(id, videoTitle)
+        const isUpdated = await videosRepository.updateVideoById(id, videoTitle)
 
         if (isUpdated) {
             res.send(204)
